@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fce15c6c4d6c5ed439b42ae6a6a0072d, type: 3}
+  m_Name: BlueBrick
+  m_EditorClassIdentifier: 
+  SpriteForms:
+  - {fileID: 21300000, guid: c74fcc4f6c8944442be7e90303a72962, type: 3}
+  - {fileID: 21300000, guid: bdd65340686b80844a44d2b9df71384d, type: 3}
+  - {fileID: 21300000, guid: d5427a2d34fa0204c9748e6e45881854, type: 3}
+  - {fileID: 21300000, guid: 62ae7feaabc87f64aa4747ad54caebd3, type: 3}
+  BrickType: 0
