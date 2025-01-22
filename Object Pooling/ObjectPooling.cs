@@ -2,10 +2,15 @@ using DG.Tweening;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
 
 public static class ObjectPooling
 {
+
+    public static float GridMinX;
+    public static float GridMaxY;
+
     public static void RegenerateBricks(bool[] gaps, Brick[,] allBricks , Stack<Brick> collapsed,int gapCount,int column)
     {
         for(int row = 0; row < 8; row++)
@@ -15,11 +20,7 @@ public static class ObjectPooling
 
             Brick regeneratedBrick = collapsed.Pop();
 
-            regeneratedBrick.transform.position = new Vector3(regeneratedBrick.transform.position.x, 2.2f, 0);
-
-            Vector3 positionInfo = regeneratedBrick.transform.position;
-
-            MoveBrick(positionInfo, column * 0.5f, gapCount * 0.5f, regeneratedBrick);
+            MoveBrick(column * 0.5f, gapCount * 0.5f, regeneratedBrick);
 
             GameManager.Instance.SetCubeInfos(regeneratedBrick.gameObject, row, column, true);
 
@@ -30,10 +31,29 @@ public static class ObjectPooling
             gapCount--;
 
         }
+
+        SetLetTouch((int)(Brick.AnimationDuration * 1000));
+
     }
-    public static void MoveBrick(Vector3 positionInfo , float goRight , float goDown, Brick regeneratedBrick)
+    public static void MoveBrick(float goRight , float goDown, Brick regeneratedBrick)
     {
-        Vector3 newPosition = new Vector3(-2 + goRight , 2.2f - goDown, positionInfo.z);
-        regeneratedBrick.transform.DOMove(newPosition, 1f);
+        regeneratedBrick.transform.position = new Vector3(regeneratedBrick.transform.position.x, GridMaxY + 1f, 0);
+
+        Vector3 positionInfo = regeneratedBrick.transform.position;
+
+        Vector3 newPosition = new Vector3(GridMinX + goRight , GridMaxY - goDown, positionInfo.z);
+
+        regeneratedBrick.transform.DOMove(newPosition, Brick.AnimationDuration);
+    }
+    /// <summary>
+    /// After "delay" miliseconds LetTouch variable will be setted true.
+    /// </summary>
+    /// <param name="delay"></param>
+    public static async void SetLetTouch(int delay)
+    {
+        await Task.Delay(delay);
+
+        TouchSystem.Instance.LetTouch = true;
+        GameManager.Instance.GroupBricks();
     }
 }

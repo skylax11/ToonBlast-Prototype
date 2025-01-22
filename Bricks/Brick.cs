@@ -10,6 +10,8 @@ public class Brick : MonoBehaviour
     public BrickInfo BrickInfo;
     public BrickGroup InvolvedGroup;
 
+    public static float AnimationDuration = 1f;
+
     private BrickAnimator _brickAnimator;
     private void Start()
     {
@@ -28,6 +30,7 @@ public class Brick : MonoBehaviour
     public void Collapse()
     {
         gameObject.SetActive(false);
+        TouchSystem.Instance.LetTouch = false;
         GameManager.CollapsedBricks.Push(this);
     }
 }

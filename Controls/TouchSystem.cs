@@ -2,15 +2,18 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UIElements;
 
-public class TouchSystem : MonoBehaviour
+public class TouchSystem : MonobehaviourSingleton<TouchSystem>
 {
     [SerializeField] private PlayerInput _inputSystem;  
     private InputAction touchAction;  
 
     private Camera mainCamera;
 
-    private bool isTouching = false; 
+    private bool isTouching = false;
+
+    public bool LetTouch = true;
 
     void Start()
     {
@@ -20,6 +23,9 @@ public class TouchSystem : MonoBehaviour
 
     void Update()
     {
+        if (!LetTouch)
+            return;
+
         if (touchAction.IsPressed())
         {
             var touch = Touchscreen.current.primaryTouch;

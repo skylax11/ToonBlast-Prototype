@@ -24,23 +24,28 @@ public class GameManager : MonobehaviourSingleton<GameManager>
     [SerializeField] Transform _parent;
     private Vector3 _pivot = new Vector3(-2f, -1.8f, 0);
 
+    // Min x and Max Y values for regenerating bricks.
+    public static float GridMinX = -2f;
+    public static float GridMaxY = 2.2f;
 
     [Header("Brick Struct")]
     private Brick[,] _allBricks;
-    [SerializeField] float _brickRelocateDuration;
+    
 
 
     public static Stack<Brick> CollapsedBricks;
 
     private void Start()
     {
+        ObjectPooling.GridMaxY = GridMaxY;
+        ObjectPooling.GridMinX = GridMinX;
+
         CollapsedBricks = new Stack<Brick>();
         _allBricks = new Brick[_totalRows,_totalCols];
 
         GenerateBricks();
         GroupBricks();
     }
-    int c;
     private void GenerateBricks()
     {
         for (int i = 0; i < _totalRows; i++)
@@ -48,8 +53,7 @@ public class GameManager : MonobehaviourSingleton<GameManager>
             for (int j = 0; j < _totalCols; j++)
             {
                 GameObject spawnedCube = Instantiate(_brickToSpawn, _parent);
-                spawnedCube.name = "Cube" +(c);
-                c++;
+
                 SetCubeInfos(spawnedCube,i,j);
 
                 spawnedCube.transform.position = _pivot;
@@ -61,7 +65,7 @@ public class GameManager : MonobehaviourSingleton<GameManager>
         }
     }
     #region GROUPING BRICKS & FLOODFILL ALGORITHM
-    private void GroupBricks()
+    public void GroupBricks()
     {
         bool[,] visited = new bool[_totalRows,_totalCols];
 
@@ -79,9 +83,6 @@ public class GameManager : MonobehaviourSingleton<GameManager>
 
                     int initialGroupCount = group.BrickList.Count;
 
-                    if (initialGroupCount < 2) // it is already setted as default sprite
-                        continue;
-
                     Sprite spriteToChange = GetSprite(_allBricks[row,col].BrickInfo, initialGroupCount);
 
                     for (int i = 0; i < initialGroupCount; i++)
@@ -89,7 +90,6 @@ public class GameManager : MonobehaviourSingleton<GameManager>
                 }
             }
         }
-
     }
     private Sprite GetSprite(BrickInfo info, int count)
     {
@@ -133,15 +133,13 @@ public class GameManager : MonobehaviourSingleton<GameManager>
 
         RelocateBricks(firstColumn,lastColumn,group);
 
-        GroupBricks(); 
-
     }
     private void RelocateBricks(int firstColumn, int lastColumn, BrickGroup group)
     {
 
-        List<List<Brick>> gapList  = GetGapInfos(group, firstColumn, lastColumn)[0] as List<List<Brick>>;
+        GapInfo allGapInfos = new GapInfo();
 
-        List<List<int>> gapRowList = GetGapInfos(group, firstColumn, lastColumn)[1] as List<List<int>>;
+        allGapInfos.SetGapInfos(group, firstColumn, lastColumn);
 
         int gapListCounter = 0;
 
@@ -149,8 +147,8 @@ public class GameManager : MonobehaviourSingleton<GameManager>
         {
             bool[] availableRows = new bool[_totalRows];
 
-            List<Brick> gaps = gapList[gapListCounter];
-            List<int> gapRowIndexes = gapRowList[gapListCounter];
+            List<Brick> gaps = allGapInfos.GapList[gapListCounter];
+            List<int> gapRowIndexes = allGapInfos.GapRowList[gapListCounter];
 
             gapListCounter++;
 
@@ -170,7 +168,7 @@ public class GameManager : MonobehaviourSingleton<GameManager>
                 Vector3 positionInfo = currentBrick.transform.position;
 
                 Vector3 newPosition = new Vector3(positionInfo.x, positionInfo.y - gapCount * 0.5f, positionInfo.z);
-                currentBrick.transform.DOMove(newPosition, _brickRelocateDuration);
+                currentBrick.transform.DOMove(newPosition, Brick.AnimationDuration);
                 currentBrick.Row -= gapCount;
 
                 _allBricks[row - gapCount, column] = currentBrick;
@@ -178,12 +176,17 @@ public class GameManager : MonobehaviourSingleton<GameManager>
 
                 availableRows[row] = true;
                 availableRows[row - gapCount] = false;
+
+                currentBrick.GetComponent<SpriteRenderer>().sortingOrder = currentBrick.Row;
             }
 
 
             ReGenerateBricks(availableRows, _allBricks, gaps.Count, column);
 
         }
+
+        allGapInfos.ClearReferences();
+
     }
     private int CalcGapCount(List<int> gapRowIndexes , int row)
     {
@@ -194,40 +197,6 @@ public class GameManager : MonobehaviourSingleton<GameManager>
                 counter++;
 
         return counter; 
-    }
-    /// <summary>
-    /// Object array returns a gap list and their indexes as rows. It prevents data conflicting with Object Pooling.(Rows of the bricks also adjusted in ObjectPooling.cs)
-    /// </summary>
-    /// <param name="group">The brick group which is clicked on</param>
-    /// <param name="firstColumn">First column of the group</param>
-    /// <param name="lastColumn">Last column of the group</param>
-    /// <returns></returns>
-    private object[] GetGapInfos(BrickGroup group,int firstColumn , int lastColumn)
-    {
-
-        List<List<Brick>> GapList = new List<List<Brick>>();
-        List<List<int>> gapRowList = new List<List<int>>();
-
-
-        for (int column = firstColumn; column <= lastColumn; column++)
-        {
-            List<Brick> gaps = group.BrickList.Where(x => x.Column == column).OrderBy(x => x.Row).ToList();
-            GapList.Add(gaps);
-
-        }
-        for (int i = 0; i < GapList.Count; i++)
-        {
-            List<int> newRowList = new List<int>();
-
-            for (int j = 0; j < GapList[i].Count; j++)
-            {
-                newRowList.Add(GapList[i][j].Row);
-            }
-
-            gapRowList.Add(newRowList);
-        }
-
-        return new object[]{ GapList , gapRowList };
     }
     /// <summary>
     /// Regenerates the collapsed bricks. Goals to gain performance with performing Object Pooling pattern.
