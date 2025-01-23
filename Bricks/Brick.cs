@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -10,7 +11,7 @@ public class Brick : MonoBehaviour
     public BrickInfo BrickInfo;
     public BrickGroup InvolvedGroup;
 
-    public static float AnimationDuration = 1f;
+    public bool HasTransformedEver = false;
 
     private BrickAnimator _brickAnimator;
     private void Start()
@@ -26,6 +27,26 @@ public class Brick : MonoBehaviour
         }
 
         InvolvedGroup.CollapseAll();
+    }
+    public void TransformAnotherBrick()
+    {
+        _brickAnimator.HandleTransformAnim();
+    }
+    /// <summary>
+    /// A transform function which will be called at end of the "Transform" animation.
+    /// </summary>
+    public void Transform()
+    {
+        GameManager _gm = GameManager.Instance;
+
+        // if random.range is even number then choose your neighbour as (row+1,column). brick, else (row,column+1)
+
+        Brick neighbourBrick = (UnityEngine.Random.Range(0, 2) % 2 == 0) ? 
+            _gm.AllBricks[Row + 1, Column]
+          : _gm.AllBricks[Row, Column + 1];
+
+        GameManager.Instance.SetCubeInfos(gameObject, Row, Column,
+            (int)Enum.ToObject(typeof(BrickType), neighbourBrick.BrickInfo.BrickType));
     }
     public void Collapse()
     {

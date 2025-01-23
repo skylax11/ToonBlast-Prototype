@@ -5,8 +5,16 @@ using UnityEngine;
 public class BrickAnimator : MonoBehaviour
 {
     private Animator _animator;
+
+    [Header("Animation Infos")]
+    [SerializeField] AnimationClip _transformClip;
+    public static float TransformClipLength;
+    public static float RelocateAnimationDuration = 1f;
+
+
     private void Start()
     {
+        TransformClipLength = _transformClip.length;
         _animator = GetComponent<Animator>();
     }
 
@@ -15,6 +23,10 @@ public class BrickAnimator : MonoBehaviour
     public void SingleBrick()
     {
         SetAnimation("SingleBrick", true);
+    }
+    public void HandleTransformAnim()
+    {
+        SetAnimation("Transform", true);
     }
     public void DisableBoolean(string name)
     {
