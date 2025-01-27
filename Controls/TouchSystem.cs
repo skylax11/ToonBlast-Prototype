@@ -11,8 +11,6 @@ public class TouchSystem : MonobehaviourSingleton<TouchSystem>
 
     private Camera mainCamera;
 
-    private bool isTouching = false;
-
     public bool LetTouch = true;
 
     void Start()
@@ -21,7 +19,7 @@ public class TouchSystem : MonobehaviourSingleton<TouchSystem>
         mainCamera = Camera.main; 
     }
 
-    void Update()
+    public void OnTouchInput()
     {
         if (!LetTouch)
             return;
@@ -30,11 +28,9 @@ public class TouchSystem : MonobehaviourSingleton<TouchSystem>
         {
             var touch = Touchscreen.current.primaryTouch;
 
-            if (touch.phase.ReadValue() == UnityEngine.InputSystem.TouchPhase.Began && !isTouching)
+            if (touch.phase.ReadValue() == UnityEngine.InputSystem.TouchPhase.Began)
             {
-                isTouching = true; 
-
-                Vector2 touchPosition = touch.position.ReadValue(); 
+                Vector2 touchPosition = touch.position.ReadValue();
 
                 Vector2 worldPos = mainCamera.ScreenToWorldPoint(touchPosition);
 
@@ -47,7 +43,5 @@ public class TouchSystem : MonobehaviourSingleton<TouchSystem>
                 }
             }
         }
-        else
-            isTouching = false;
     }
 }

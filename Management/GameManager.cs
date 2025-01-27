@@ -38,15 +38,14 @@ public class GameManager : MonobehaviourSingleton<GameManager>
     private BrickGrouper _brickGrouper;
     private BrickRelocator _brickRelocator;
 
-    [Header("Deadlock Control")]
-    private int _collapsableGroupCount;
-
-
     public static Stack<Brick> CollapsedBricks;
 
     private void Start()
     {
-        print(Application.targetFrameRate);
+        Application.targetFrameRate = 60;
+
+        DOTween.Init();
+
         _brickGrouper = GetComponent<BrickGrouper>();
         _brickRelocator = GetComponent<BrickRelocator>();
 
